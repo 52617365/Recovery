@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "random-useragent": "^0.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.4"
+  },
+  "name": "recoverybot-ts",
+  "version": "1.0.0",
+  "main": "args.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
