@@ -28,7 +28,7 @@ async function PreForm(form) {
     );
   } catch (error) {
     console.log(`Proxy down. Target: ${form.login} | Proxy: ${args.proxy}`);
-    await page.close();
+    return;
   }
   try {
     await SolveCaptcha();

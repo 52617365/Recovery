@@ -10,7 +10,7 @@ async function Evasions() {
   const evasions = enabledEvasions.map(
     (e) => new require(`puppeteer-extra-plugin-stealth/evasions/${e}`)
   );
-  return enabledEvasions;
+  return evasions;
 }
 
 async function Stealth() {
