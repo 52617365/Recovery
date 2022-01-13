@@ -1,4 +1,4 @@
-const {randomizeCreationMonth, randomizeCreationYear, randomizePaymentMethod, randomizeSubLength, shuffle} = require(__dirname + '/random.js');
+const {/*randomizeCreationMonth, randomizeCreationYear, randomizePaymentMethod, randomizeSubLength,*/ shuffle} = require(__dirname + '/random.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -6,35 +6,29 @@ const directoryPath = path.join(__dirname, '../Targets');
 
 function loadTargets()
 {
-    console.log("Loading targets.");
-    fs.readdir(directoryPath, function (err, files) {
-        //handling error
-        if (err) {
-            return console.log('Unable to scan directory: ' + err);
+    // Reading all the files inside target directory and randomizing order.
+    const files = shuffle(fs.readdirSync(directoryPath));
+
+    let targetlist = [];
+    for (const file of files)
+    {
+        // Continue rest of loop if file is not a text file.
+        if (getExtension(file) != 'txt') {continue;}
+
+        const path = `${directoryPath}/${file}`;
+
+        try {
+            const data = fs.readFileSync(path, 'utf8')
+            // Split data on new line
+            const lines = data.split(/\r?\n/);
+            const form = initForm(lines);
+            targetlist.push(form);
+        } catch (err) {
+          console.error(err)
         }
-        console.log(`Loaded ${files.length} targets.`);
-        //listing all files using forEach
-
-        let targets = [];
-        for (const file of files)
-        {
-            // Return if file is not a text file.
-            if (getExtension(file) != 'txt') {return;}
-
-            const path = `${directoryPath}/${file}`;
-
-            try {
-                const data = fs.readFileSync(path, 'utf8')
-                // Split data on new line
-                const lines = data.split(/\r?\n/);
-                const form = initForm(lines);
-                targets.push(form);
-            } catch (err) {
-              console.error(err)
-            }
-         };
-        return targets;
-    })
+     };
+    console.log(`Loaded ${targetlist.length} targets.`);
+    return targetlist;
 };
 
 function getExtension(file)
@@ -61,11 +55,8 @@ function initForm(form)
     }
     return target;
 };
-const targets1 = loadTargets();
-module.exports = {
-    targets1
-}
-
+const targets = loadTargets();
+module.exports.targets = targets;
 
 
 

@@ -1,12 +1,23 @@
 const {targets} = require('./target.js');
+const {args} = require('./args.js');
+const {chromium} = require('playwright-extra')
+const RecaptchaPlugin = require('@extra/recaptcha')
 
-SendRequests();
 function SendRequests()
 {
-    for(var i = 0; i < targets.length; i++) {
-       for(var j = 0; j < targets[i].length; j++) {
-          console.log(targets[i][j]);
-         }
+    for(var i = 0; i < targets.length; i++)
+    {
+
+        console.log(targets[i].login);
+
     }
-}
+};
+
+SendRequests();
+
+
+
+
+
+
 
