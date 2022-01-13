@@ -1,52 +1,57 @@
-const { initstealth } = require("./playwrightstealth.js");
+const { Evasions, Stealth } = require("./playwrightstealth.js");
 const { args } = require("./args.js");
 const { chromium } = require("playwright-extra");
 const { captcha, SolveCaptcha } = require("./captcha.js");
 const RecaptchaPlugin = require("@extra/recaptcha");
+chromium.use(RecaptchaPlugin(captcha));
 
-chromium.use(RecaptchaPlugin(captcha)),
-  async function PreForm(form) {
-    const browser = await chromium.launch({
-      headless: false,
-      args: args,
-      //slowMo: 50,
-    });
+async function PreForm(form) {
+  const browser = await chromium.launch({
+    headless: false,
+    args: args,
+    //slowMo: 50,
+  });
 
-    const page = await browser.newPage();
+  const page = await browser.newPage();
 
-    // This is responsible of using puppeteer stealth in playwright.
-    await init.PlayWrightStealth();
+  // This is responsible of using puppeteer stealth in playwright.
+  const evasions = await Evasions();
+  const stealth = await Stealth();
+  evasions.forEach((e) => e().onPageCreated(stealth));
+  for (let evasion of stealth.callbacks) {
+    await page.addInitScript(evasion.cb, evasion.a);
+  }
 
-    try {
-      await page.goto(
-        "https://secure.runescape.com/m=accountappeal/passwordrecovery"
-      );
-    } catch (error) {
-      console.log(`Proxy down. Target: ${form.login} | Proxy: ${args.proxy}`);
-      await page.close();
-    }
-    try {
-      SolveCaptcha();
-      await page.click("id=email");
-      await page.fill("id=email", form.login);
-      await page.click("id=passwordRecovery");
-      await page.waitForSelector("#main-iframe", { timeout: 3000 });
-      await page.waitForSelector("id=main-iframe", { timeout: 3000 });
-      SolveCaptcha();
-      await page.waitForSelector("id=email", { timeout: 3000 });
-      await page.click("id=email");
-      await page.fill("id=email", form.login);
-      await page.click("id=passwordRecovery");
-      SolveCaptcha();
-      await page.waitForSelector("#p-account-recovery-identified");
-      await page.click("#l-vista__container > small > a");
-      await page.waitForSelector("id=p-account-recovery-pre-confirmation");
-      SolveCaptcha();
-      await page.click("#l-vista__container > p:nth-child(5) > a");
-    } catch (error) {
-      throw error;
-    }
-  };
+  try {
+    await page.goto(
+      "https://secure.runescape.com/m=accountappeal/passwordrecovery"
+    );
+  } catch (error) {
+    console.log(`Proxy down. Target: ${form.login} | Proxy: ${args.proxy}`);
+    await page.close();
+  }
+  try {
+    await SolveCaptcha();
+    await page.click("id=email");
+    await page.fill("id=email", form.login);
+    await page.click("id=passwordRecovery");
+    await page.waitForSelector("#main-iframe", { timeout: 3000 });
+    await page.waitForSelector("id=main-iframe", { timeout: 3000 });
+    await SolveCaptcha();
+    await page.waitForSelector("id=email", { timeout: 3000 });
+    await page.click("id=email");
+    await page.fill("id=email", form.login);
+    await page.click("id=passwordRecovery");
+    await SolveCaptcha();
+    await page.waitForSelector("#p-account-recovery-identified");
+    await page.click("#l-vista__container > small > a");
+    await page.waitForSelector("id=p-account-recovery-pre-confirmation");
+    await SolveCaptcha();
+    await page.click("#l-vista__container > p:nth-child(5) > a");
+  } catch (error) {
+    throw error;
+  }
+}
 
 async function FillForm(form) {
   try {
@@ -98,13 +103,13 @@ async function FillForm(form) {
 }
 
 async function AfterForm() {
-  SolveCaptcha();
-  SolveCaptcha();
+  await SolveCaptcha();
+  await SolveCaptcha();
   await page.waitForSelector("#l-vista__container > h1", { state: "visible" });
   await page.close();
 }
 
-module.exports.Request = async function Request(form) {
+async function Request(form) {
   try {
     await PreForm(form);
   } catch (error) {
@@ -128,4 +133,6 @@ module.exports.Request = async function Request(form) {
     console.log("Trying again.");
     await AfterForm();
   }
-};
+}
+
+module.exports = { Request };

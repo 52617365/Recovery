@@ -1,10 +1,12 @@
 const { targets } = require("./target.js");
 const { Request } = require("./request.js");
 
-async () => {
+async function SendRequests() {
   await Promise.all(
     targets.map(async (target) => {
-      await DoRequest(target);
+      await Request(target);
     })
   );
-};
+}
+
+SendRequests();

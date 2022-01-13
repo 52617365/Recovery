@@ -1,22 +1,25 @@
-module.exports.initstealth = async function () {
+async function Evasions() {
   const enabledEvasions = [
-    "chrome.runtime",
     "iframe.contentWindow",
+    "chrome.runtime",
     "navigator.webdriver",
     "chrome.app",
     "chrome.csi",
   ];
+
   const evasions = enabledEvasions.map(
     (e) => new require(`puppeteer-extra-plugin-stealth/evasions/${e}`)
   );
+  return enabledEvasions;
+}
+
+async function Stealth() {
   const stealth = {
     callbacks: [],
     async evaluateOnNewDocument(...args) {
       this.callbacks.push({ cb: args[0], a: args[1] });
     },
   };
-  evasions.forEach((e) => e().onPageCreated(stealth));
-  for (let evasion of stealth.callbacks) {
-    await page.addInitScript(evasion.cb, evasion.a);
-  }
-};
+  return stealth;
+}
+module.exports = { Evasions, Stealth };

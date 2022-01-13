@@ -56,4 +56,4 @@ function initForm(form) {
   return target;
 }
 const targets = loadTargets();
-module.exports.targets = targets;
+module.exports = { targets };
