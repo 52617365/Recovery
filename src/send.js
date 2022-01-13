@@ -1,23 +1,10 @@
-const {targets} = require('./target.js');
-const {args} = require('./args.js');
-const {chromium} = require('playwright-extra')
-const RecaptchaPlugin = require('@extra/recaptcha')
+const { targets } = require("./target.js");
+const { Request } = require("./request.js");
 
-function SendRequests()
-{
-    for(var i = 0; i < targets.length; i++)
-    {
-
-        console.log(targets[i].login);
-
-    }
+async () => {
+  await Promise.all(
+    targets.map(async (target) => {
+      await DoRequest(target);
+    })
+  );
 };
-
-SendRequests();
-
-
-
-
-
-
-

@@ -7,4 +7,13 @@ const captchaArgs = {
     visualFeedback: true
 };
 
-module.exports = {captchaArgs};
+async function SolveCaptcha() {
+  try {
+    for (const frame of page.mainFrame().childFrames()) {
+      await frame.solveRecaptchas();
+    }
+  } catch (error) {
+    console.log("Problem solving captcha");
+  }
+};
+module.exports = {captchaArgs, SolveCaptcha};
