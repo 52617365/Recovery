@@ -1,12 +1,12 @@
 const { targets } = require("./target.js");
-const { Request } = require("./request.js");
+const { SendRequest } = require("./request.js");
+const loadBrowser = require("./browser.js");
 
-async function SendRequests() {
+(async () => {
   await Promise.all(
     targets.map(async (target) => {
-      await Request(target);
+      const page = await loadBrowser(target.proxy);
+      await SendRequest(page, target);
     })
   );
-}
-
-SendRequests();
+})();

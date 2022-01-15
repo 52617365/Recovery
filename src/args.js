@@ -14,15 +14,11 @@ const useragent = random_ua.getRandom(function (ua) {
 });
 
 const args = [
-  `--proxy-server=socks5://${proxy}`,
-  `--disable-features=IsolateOrigins,site-per-process`,
-  "--disable-notifications",
-  "--disable-popup-blocking",
-  "--disable-gpu",
+  //`--proxy-server=socks5://${proxy}`,
+  "--disable-features=IsolateOrigins,site-per-process,SitePerProcess",
   `--flag-switches-begin --disable-site-isolation-trials --flag-switches-end`,
-  `--disable-web-security`,
-  `--disable-features=IsolateOrigins,site-per-process`,
   `--user-agent=${useragent}`,
+  "--disable-web-security",
 ];
 
 module.exports = { args };
