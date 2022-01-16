@@ -1,8 +1,11 @@
-const { Evasions, Stealth } = require("./playwrightstealth");
+const { Evasions, Stealth } = require("./playwrightstealth.js");
 const { chromium } = require("playwright-extra");
 const { args } = require("./args.js");
+const { captchaArgs } = require("./captcha.js");
+const RecaptchaPlugin = require("@extra/recaptcha");
 
 module.exports = async function (proxy) {
+  chromium.use(RecaptchaPlugin(captchaArgs));
   const browser = await chromium.launch({
     headless: false,
     args: args,

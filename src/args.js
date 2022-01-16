@@ -1,6 +1,4 @@
 const random_ua = require("random-useragent");
-const { targets } = require("./target.js");
-const proxy = targets.proxy;
 
 const useragent = random_ua.getRandom(function (ua) {
   return (
