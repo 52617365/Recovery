@@ -1,6 +1,6 @@
 const { Evasions, Stealth } = require("./playwrightstealth.js");
 const { chromium } = require("playwright-extra");
-const { args } = require("./args.js");
+const { args, useragent } = require("./args.js");
 const { captchaArgs } = require("./captcha.js");
 const RecaptchaPlugin = require("@extra/recaptcha");
 
@@ -17,6 +17,8 @@ module.exports = async function (proxy) {
   const page = await browser.newPage({
     extraHTTPHeaders: { referer: "https://support.runescape.com/" },
     locale: "en-US",
+    //   javaScriptEnabled: false,
+    userAgent: useragent,
   });
   const evasions = await Evasions();
   const stealth = await Stealth();

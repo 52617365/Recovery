@@ -23,7 +23,9 @@ class Request {
         `Proxy down. target: ${this.target.login} | Proxy: ${this.target.proxy}`
       );
       await this.page.close();
-      return;
+      if (!this.page.isConnected()) {
+        return;
+      }
     }
     await SolveCaptcha(this.page);
     await this.page.click("id=email");
@@ -46,10 +48,12 @@ class Request {
     await this.page.click("#add-password");
     await this.page.click("#password3");
     try {
+      await this.page.waitForSelector("#norecoveries", { timeout: 1500 });
       await this.page.check("#norecoveries");
       const checked = await this.page.isChecked("#norecoveries");
       expect(checked).toBeTruthy();
     } catch (error) {
+      console.log("No recovery questions.");
       // Do nothing, account has no recovery questions, it's normal.
     }
 
