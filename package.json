@@ -1,17 +1,25 @@
 {
+  "pkg": {
+    "assets": "node_modules/puppeteer-extra-plugin-stealth/**/*.*"
+  },
   "dependencies": {
-    "playwright": "1.8.0",
+    "@extra/recaptcha": "^4.2.1-next.587",
+    "@playwright/test": "^1.17.2",
     "playwright-extra": "^4.2.1-next.616",
+    "puppeteer-extra-plugin-stealth": "^2.9.0",
     "random-useragent": "^0.5.0"
   },
   "name": "recoverybot-ts",
   "version": "1.0.0",
-  "main": "args.js",
+  "main": "send.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "playwright": "^1.17.2"
+  }
 }
