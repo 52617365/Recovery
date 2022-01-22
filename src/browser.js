@@ -9,9 +9,11 @@ module.exports = async function (proxy) {
   const browser = await chromium.launch({
     headless: false,
     args: args,
+    /*
     proxy: {
       server: `socks5://${proxy}`,
     },
+    */
     //slowMo: 50,
   });
   const page = await browser.newPage({

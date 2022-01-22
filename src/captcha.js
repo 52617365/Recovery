@@ -13,21 +13,21 @@ const captchaArgs = {
 async function SolveCaptcha(page) {
   for (const frame of page.mainFrame().childFrames()) {
     // Checking if site contains a recaptcha.
-    const element = await expect(
-      frame.locator('iframe[src*="recaptcha/"]')
-    ).toHaveCount(0);
-
-    // If site contains a recaptcha, solve it, otherwise return.
-    if (element) {
-      return;
-    } else {
+    try {
+      await page.waitForSelector('iframe[src*="recaptcha/"]', {
+        timeout: 3000,
+      });
+      // If site contains a recaptcha, solve it, otherwise return.
       try {
         await frame.solveRecaptchas();
-        await frame.waitForNavigation();
+        //        await frame.waitForNavigation();
       } catch (error) {
         console.log(`Captcha error (trying again): ${error}`);
         SolveCaptcha(page);
       }
+    } catch (error) {
+      console.log("No captcha.");
+      return;
     }
   }
 }

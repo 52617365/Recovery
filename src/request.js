@@ -17,21 +17,32 @@ class Request {
       await this.page.goto(
         "https://secure.runescape.com/m=accountappeal/passwordrecovery"
       );
-      await this.page.waitForNavigation({ timeout: 2000 });
+      try {
+        await this.page.waitForSelector(
+          "#l-vista__container > p:nth-child(3)",
+          {
+            timeout: 1500,
+          }
+        );
+        console.log(`${this.target.login} blocked.`);
+        await this.page.close();
+        return;
+      } catch (error) {}
+      await this.page.click("#CybotCookiebotDialogBodyButtonDecline", {
+        timeout: 5000,
+      });
+      //      await this.page.waitForNavigation({ timeout: 10000 });
     } catch (error) {
       console.log(
         `Proxy down. target: ${this.target.login} | Proxy: ${this.target.proxy}`
       );
       await this.page.close();
-      if (!this.page.isConnected()) {
-        return;
-      }
+      return;
     }
     await SolveCaptcha(this.page);
     await this.page.click("id=email");
     await this.page.fill("id=email", this.target.login);
     await this.page.click("id=passwordRecovery");
-    await this.page.waitForLoadState("networkidle"); // This resolves after 'networkidle'
     await SolveCaptcha(this.page);
     await this.page.click("#l-vista__container > small > a");
     await SolveCaptcha(this.page);
@@ -48,12 +59,12 @@ class Request {
     await this.page.click("#add-password");
     await this.page.click("#password3");
     try {
-      await this.page.waitForSelector("#norecoveries", { timeout: 1500 });
+      const recovery_field = this.page.locator("#state_otherinfo");
+      await recovery_field.waitFor({ state: "attached", timeout: 800 });
       await this.page.check("#norecoveries");
       const checked = await this.page.isChecked("#norecoveries");
-      expect(checked).toBeTruthy();
+      await expect(checked).toBeTruthy();
     } catch (error) {
-      console.log("No recovery questions.");
       // Do nothing, account has no recovery questions, it's normal.
     }
 
@@ -85,8 +96,9 @@ class Request {
     } catch (error) {
       // Just catch, because this.target is not from usa, we can still continue.
     }
+    console.log("No recovery questions.");
 
-    // Fill the this.page
+    // Fill the page
     await this.page.click("id=reg_email");
     await this.page.fill("id=reg_email", this.target.personalMail);
     await this.page.fill("id=reg_email_conf", this.target.personalMail);
