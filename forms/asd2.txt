@@ -1,5 +1,5 @@
-motherfucker@gmail.com
-personalmail2@gmail.com
+firstmail@gmail.com
+secondmail@gmail.com
 pass12
 pass22
 pass32
